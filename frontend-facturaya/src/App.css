@@ -1,38 +1,93 @@
-.App {
+.App{
+  display: block;
+  width: 565px;
+  height: fit-content;
+  margin-left: 35px;
+  margin-bottom: 300px;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.search-box{
+  border: 1px solid;
+  height: 65px;
+
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.table-box{
+  margin-top: 15px;
+  width: 685px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.search-input{
+  margin-top: 15px;
+  margin-left: 15px;
+  width: 260;
+  height: 30px;
+  border-radius: 5px;
 }
 
-.App-link {
-  color: #61dafb;
+.addBtn{
+  width: 120px;
+  height: 35px;
+  margin-left: 200px;
+  font-size: 13px;
+  line-height: 10px;
+  border: 1px solid;
+  border-radius: 5px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.table{
+  width: 565px;
+  border-collapse: collapse;
+  border-radius: 5px;
+}
+
+.table th{
+  font-size: 13px;
+  font-weight: bold;
+  border: 1px solid;
+  line-height: 23px;
+  text-align: center;
+  outline: none;
+}
+.table td{
+  font-size: 10px;
+  font-weight: bold;
+  border: 1px solid;
+  line-height: 10px;
+  text-align: center;
+  outline: none;
+}
+
+.editBtn,.deleteBtn{
+  font-size: 10px;
+  border: 1px solid;
+  border-radius: 5px;
+  width: 65px;
+}
+
+.addeditpopup{
+  width: 530px;
+  height: 320px;
+  border: 1px solid;
+  z-index: 1;
+  border-collapse: collapse;
+}
+
+h4{
+  margin-top: 5px;
+  width: 300px;
+  height: 30px;
+  border: 1px solid;
+  border-radius: 5px;
+  margin-left: 15px;
+}
+
+.closeBtn{
+  float: right;
+  font-size: 27px;
+  font-weight: bold;
+  margin-right: 5px;
+  background: none;
+  border-color: transparent;
 }
