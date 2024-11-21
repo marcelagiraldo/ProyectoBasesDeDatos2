@@ -40,10 +40,44 @@ app.get('/clientes',(req,res)=>{
 })
 
 app.get('/clientes/:clienteId',(req,res)=>{
-    const setId = req.params.clienteId
-    const sql = "select * from proyecto.obtener_clientes()"
-    pool.query(sql,(err,result)=>{
+    const setId = Number(req.params.clienteId)
+    const sql = "select * from proyecto.obtener_cliente($1)"
+    pool.query(sql,[setId],(err,result)=>{
         if(err) return res.json(err);
-        return res.status(200).json(result.rows)
+        return res.status(200).json(result.rows[0])
+    })
+})
+
+app.post('/clientes',(req,res)=>{
+    const {numero_documento,nombre,direccion,telefono,email,ciudad,departamento} = req.body
+    const sql = "call proyecto.crear_clientes($1,$2,$3,$4,$5,$6,$7)"
+    pool.query(sql,[numero_documento, nombre, direccion, telefono, email, ciudad, departamento],(err,result)=>{
+        if(err) {
+            console.error("Error al llamar al procedimiento:", err);
+            return res.status(500).json({ error: "Error al insertar el cliente." });
+        }
+        return res.status(200).json({ message: "Cliente insertado exitosamente." });
+    })
+})
+
+app.patch('/clientes/:clienteId',(req,res)=>{
+    const setId = Number(req.params.clienteId)
+    const {numero_documento,nombre,direccion,telefono,email,ciudad,departamento} = req.body
+    const sql = "call proyecto.modificar_clientes($1,$2,$3,$4,$5,$6,$7)"
+    pool.query(sql,[numero_documento, nombre, direccion, telefono, email, ciudad, departamento],(err,result)=>{
+        if(err) return res.json(err);
+        return res.status(200).send(`Cliente actualizado correctamente para ClienteId: ${setId}`)
+    })
+})
+
+app.delete('/clientes/:clienteId',(req,res)=>{
+    const setId = Number(req.params.clienteId)
+    const sql = "call proyecto.eliminar_clientes($1)"
+    console.log(sql);
+
+    pool.query(sql,[setId],(err,result)=>{
+        console.log(result);
+        if(err) return res.json(err);
+        return res.status(200).send(`Cliente eliminado correctamente para ClienteId: ${setId}`)
     })
 })
