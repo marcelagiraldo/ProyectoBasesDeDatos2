@@ -81,3 +81,39 @@ app.delete('/clientes/:clienteId',(req,res)=>{
         return res.status(200).send(`Cliente eliminado correctamente para ClienteId: ${setId}`)
     })
 })
+
+app.get('/productos',(req,res)=>{
+    const sql = "select * from proyecto.obtener_productos()"
+    pool.query(sql,(err,result)=>{
+        if(err) return res.json(err);
+        return res.status(200).json(result.rows)
+    })
+})
+
+app.post('/productos',(req,res)=>{
+    const {codigo, descripcion, precio_venta, impuesto_id_fk, medida, categoria_id_fk} = req.body
+    const sql = "call proyecto.crear_clientes($1,$2,$3,$4,$5,$6,$7)"
+    pool.query(sql,[codigo, descripcion, precio_venta, impuesto_id_fk, medida, categoria_id_fk],(err,result)=>{
+        if(err) {
+            console.error("Error al llamar al procedimiento:", err);
+            return res.status(500).json({ error: "Error al insertar el cliente." });
+        }
+        return res.status(200).json({ message: "Cliente insertado exitosamente." });
+    })
+})
+
+app.get('/impuestos',(req,res)=>{
+    const sql = "select * from proyecto.obtener_impuestos()"
+    pool.query(sql,(err,result)=>{
+        if(err) return res.json(err);
+        return res.status(200).json(result.rows)
+    })
+})
+
+app.get('/categorias',(req,res)=>{
+    const sql = "select * from proyecto.obtener_categorias()"
+    pool.query(sql,(err,result)=>{
+        if(err) return res.json(err);
+        return res.status(200).json(result.rows)
+    })
+})
