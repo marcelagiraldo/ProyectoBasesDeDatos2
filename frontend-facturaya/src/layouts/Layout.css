@@ -1,17 +1,60 @@
 .menu{
     display: flex;
     justify-content: center;
-    background-color: aquamarine;
+    border-bottom-style: dotted;
     width: 100%;
     height: 60%;
     align-items: center;
-    font-size: 40px;
 }
 
 .btn{
     margin: 30px;
     height: 40px;
-    font-size: 30px;
+    font-size: 25px;
     background-color: transparent;
     border-color: transparent;
+}
+
+
+.addeditpopup{
+    width: 530px;
+    height: 450px;
+    border: 1px solid;
+    z-index: 1;
+    border-collapse: collapse;
+}
+
+h4{
+    margin-top: 20px;
+    width: 300px;
+    height: 30px;
+    border-radius: 5px;
+    margin-left: 15px;
+    font-size: 26px;
+}
+
+.closeBtn{
+    float: right;
+    font-size: 27px;
+    font-weight: bold;
+    margin-right: 5px;
+    background: none;
+    border-color: transparent;
+}
+.popupInput{
+    margin-left:15px;
+    border-radius: 5px;
+    height: 20px;
+    width: 210px;
+    background-color: antiquewhite;
+}
+
+.izquierdo{
+    margin: 15px;
+    float:left;
+}
+
+.derecho{
+    margin: 15px;
+    float:right;
 }

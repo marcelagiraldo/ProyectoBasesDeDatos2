@@ -1,0 +1,188 @@
+.App{
+    display: flex;
+    width: 565px;
+    height: fit-content;
+    margin: 0 auto;
+    margin-bottom: 300px;
+    text-align: center;
+    font-size: 30px;
+    align-items: center;
+    justify-content: center;
+}
+
+
+  .table-box{
+    margin-top: 15px;
+    width: 685px;
+  }
+
+  .search-input{
+    margin-top: 15px;
+    margin-left: 15px;
+    width: 320px;
+    height: 35px;
+    border-radius: 50px;
+  }
+
+  .addBtn{
+    width: 80px;
+    height: 35px;
+    margin-left: 200px;
+    font-size: 13px;
+    border-color: transparent;
+    border-radius: 10px;
+    background-color: green;
+  }
+
+  .table {
+    width: auto; /* Se ajusta automáticamente al contenido */
+    max-width: 100%; /* Asegura que no exceda el ancho del contenedor */
+    border-collapse: collapse;
+    margin: 20px auto; /* Centra la tabla horizontalmente */
+    font-size: 16px;
+    text-align: left;
+  }
+
+  .table thead {
+    background-color: #f4f4f4;
+  }
+
+  .table th, .table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+
+  .table tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  .table tr:nth-child(even){
+    background-color: rgba(35, 126, 230, 0.212);
+  }
+
+  .editBtn{
+    font-size: 10px;
+    border: 1px solid;
+    border-radius: 5px;
+    width: 65px;
+    background-color: green;
+    border-color: green;
+    color: aliceblue;
+  }
+  .deleteBtn{
+    font-size: 10px;
+    border: 1px solid;
+    border-radius: 5px;
+    width: 65px;
+    background-color: red;
+    border-color: red;
+    color: aliceblue;
+  }
+  /* Modal styles */
+.addeditpopup {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  max-width: 700px;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1000;
+  padding: 1px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-height: 90vh;
+  overflow-y: auto; /* Allow vertical scrolling if content overflows */
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+h4 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Container for form fields */
+.popupdiv {
+  display: flex;
+  flex-direction: column;
+  width: 45%;  /* Ensures 2 items per row */
+}
+
+.popupdiv label {
+  font-weight: bold;
+  margin-top: 3px;
+  margin-bottom: 0px;
+}
+
+.popupInput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 15px;
+  width: 100%;
+}
+
+/* Buttons */
+.addClientBtn {
+  width: 20%;
+  height: 10%;
+  padding: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10%;
+  margin-bottom: 5%;
+  margin-left: 15%;
+}
+
+.addClientBtn:hover {
+  background-color: #0056b3;
+}
+
+/* Dropdowns */
+select.popupInput {
+  background-color: #fff;
+}
+
+/* Error message */
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: -10px;
+}
+
+/* Responsive Design for mobile */
+@media (max-width: 768px) {
+  .addeditpopup {
+    flex-direction: column; /* Stack sections vertically on small screens */
+    width: 90%;
+  }
+
+  .popupdiv {
+    width: 100%; /* Make form fields stack vertically on small screens */
+    margin-bottom: 15px;
+  }
+
+  .addClientBtn {
+    width: auto; /* Adjust button width for small screens */
+  }
+}
+
+  .table{
+    margin-top: 20px;
+  }

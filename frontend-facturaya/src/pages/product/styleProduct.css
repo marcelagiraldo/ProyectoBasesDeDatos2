@@ -1,0 +1,218 @@
+/* Modal styles */
+.addeditpopup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 900px;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1000;
+  padding: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-height: 90vh;
+  overflow-y: auto; /* Allow vertical scrolling if content overflows */
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+h4 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Container for form fields */
+.popupdiv {
+  display: flex;
+  flex-direction: column;
+  width: 45%;  /* Ensures 2 items per row */
+  align-items: center;
+}
+
+.popupdiv_ label {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.popupdiv label {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.popupdiv_ select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 100%; /* Asegura que el select ocupe todo el ancho disponible */
+  max-width: 300px; /* Limita el ancho máximo del select */
+}
+
+.popupInput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 15px;
+  width: 100%;
+}
+
+/* Buttons */
+.addproductBtn {
+  width: 30%;
+  height: 10%;
+  padding: 10px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10%;
+}
+
+.addproductBtn:hover {
+  background-color: #0056b3;
+}
+
+/* Dropdowns */
+select.popupInput {
+  background-color: #fff;
+}
+
+/* Error message */
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: -10px;
+}
+
+/* Responsive Design for mobile */
+@media (max-width: 768px) {
+  .addeditpopup {
+    flex-direction: column; /* Stack sections vertically on small screens */
+    width: 90%;
+  }
+
+  .popupdiv {
+    width: 100%; /* Make form fields stack vertically on small screens */
+    margin-bottom: 15px;
+  }
+
+  .addproductBtn {
+    width: auto; /* Adjust button width for small screens */
+  }
+}
+
+
+
+/* Container for all products */
+.products-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Espacio entre las tarjetas */
+  justify-content: center;
+}
+
+/* Individual product card */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Distribuye contenido en la tarjeta */
+  width: 250px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  position: relative; /* Asegura que elementos hijos puedan usar posicionamiento */
+  min-height: 300px; /* Define un mínimo de altura para consistencia */
+}
+
+/* Actions section (buttons) */
+.product-actions {
+  margin-top: auto; /* Empuja los botones hacia la parte inferior */
+  display: flex;
+  justify-content: space-between; /* Espacia los botones uniformemente */
+  gap: 10px;
+}
+
+.editBtn, .deleteBtn {
+  padding: 5px 10px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  flex: 1; /* Ajusta el tamaño para mantener consistencia */
+  text-align: center;
+}
+
+.editBtn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.deleteBtn {
+  background-color: #f44336;
+  color: white;
+}
+
+.editBtn:hover {
+  background-color: #45a049;
+}
+
+.deleteBtn:hover {
+  background-color: #e53935;
+}
+
+  .App {
+    display: flex; /* O cualquier otro contenedor adecuado */
+    flex-direction: column;
+    width: 100%; /* Asegura que ocupe el 100% del ancho de la pantalla */
+    box-sizing: border-box;
+  }
+
+  .client-list {
+    list-style-type: none;
+    margin: 10px 0 0;
+    padding: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.client-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    color: #555;
+}
+
+.client-list li:last-child {
+    border-bottom: none;
+}
+
+.popupdiv_ button {
+  margin-left: 10px;
+  width: 40px;
+  background-color: #007BFF;
+  color: white;
+  font-size: 18px;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px; /* Espacio entre el botón y el select */
+}

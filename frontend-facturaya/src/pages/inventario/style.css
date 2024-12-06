@@ -1,0 +1,11 @@
+.app{
+    margin: 30px;
+}
+
+.btn-stock{
+    color: aliceblue;
+    background-color: #007BFF;
+    width: 15%;
+    height: 10%;
+    font-size: 25px;
+}
