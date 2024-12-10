@@ -9,6 +9,11 @@ begin
 end
 $$language plpgsql;
 
+CREATE TRIGGER proyecto.trig_obtener_impuestos
+AFTER INSERT OR UPDATE OR DELETE ON proyecto.impuestos
+FOR EACH ROW
+EXECUTE FUNCTION proyecto.obtener_impuestos();
+
 select * from proyecto.obtener_impuestos();
 /*------Procedimiento para crear impuestos-------*/
 create or replace procedure proyecto.crear_impuestos(p_identificacion varchar,p_nombre varchar,p_porcentaje numeric(5,2))

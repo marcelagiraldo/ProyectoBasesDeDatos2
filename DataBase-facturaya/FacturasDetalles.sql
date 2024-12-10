@@ -1,105 +1,107 @@
-CREATE OR REPLACE procedure proyecto.crear_factura(
-    p_codigo_factura VARCHAR,
-    p_fecha DATE,
-    p_id_cliente_fk VARCHAR,
-    p_id_metodo_pago_fk VARCHAR,
-    p_productos JSONB, -- Lista de productos en formato JSONB (id_producto, cantidad, descuento)
-    p_descuento_factura NUMERIC DEFAULT 0 -- Descuento global para la factura
-)
-AS $$
-DECLARE
-    subtotal_ NUMERIC := 0;
-    total_impuestos_ NUMERIC := 0;
-    total_ NUMERIC := 0;
-    producto JSONB;
-    impuesto_producto_ NUMERIC;
-    valor_total_producto_ NUMERIC;
-    id_producto_ VARCHAR;
-    cantidad_ NUMERIC;
-    descuento_producto_ NUMERIC;
-    precio_venta_ NUMERIC;
-    tasa_impuesto_ NUMERIC;
-    stock_actual_ NUMERIC;
-BEGIN
-    -- Verificar si el cliente existe
-    IF NOT EXISTS (
-        SELECT 1 FROM proyecto.clientes WHERE numero_documento = p_id_cliente_fk
-    ) THEN
-        RAISE EXCEPTION 'El cliente con ID % no existe.', p_id_cliente_fk;
-    END IF;
-
-    -- Insertar factura
-    INSERT INTO proyecto.facturas (
-        id, codigo, fecha, subtotal, total_impuestos, total, estado, id_cliente_fk, id_metodo_pago_fk
-    ) VALUES (
-        nextval('proyecto.codigo_factura'), -- Usar secuencia para generar ID
-        p_codigo_factura,
-        CURRENT_TIMESTAMP,	
-        0, -- Se calculará más adelante
-        0,
-        0,
-        'pendiente',
-        p_id_cliente_fk,
-        p_id_metodo_pago_fk
-    );
-
-    -- Iterar sobre los productos
-    FOR producto IN SELECT * FROM jsonb_array_elements(p_productos)
-    LOOP
-        -- Extraer los valores del JSONB
-        id_producto_ := producto->>'id_producto';
-        cantidad_ := (producto->>'cantidad')::NUMERIC;
-        descuento_producto_ := COALESCE((producto->>'descuento')::NUMERIC, 0);
-
-        -- Verificar existencia del producto
-        SELECT p.precio_venta, p.cantidad, i.porcentaje
-        INTO precio_venta_, stock_actual_, tasa_impuesto_
-        FROM proyecto.productos p
-        JOIN proyecto.impuestos i ON p.impuesto_id_fk = i.identificacion
-        WHERE p.codigo = id_producto_;
-
-        IF stock_actual_ < cantidad_ THEN
-            RAISE EXCEPTION 'Stock insuficiente para el producto %.', id_producto_;
-        END IF;
-
-        -- Calcular impuestos y valor total por producto
-        valor_total_producto_ := precio_venta_ * cantidad_;
-        impuesto_producto_ := valor_total_producto_ * (tasa_impuesto_ / 100);
-        valor_total_producto_ := valor_total_producto_ + impuesto_producto_ - descuento_producto_;
-
-        -- Insertar detalle de la factura
-        INSERT INTO proyecto.detalles_factura (
-            id, cantidad, descuento, valor_total, id_producto_fk, id_factura_fk
-        ) VALUES (
-            nextval('proyecto.codigo_detalle_factura'),
-            cantidad_,
-            descuento_producto_,
-            valor_total_producto_,
-            id_producto_,
-            p_codigo_factura
-        );
-
-        -- Actualizar inventario
-        UPDATE proyecto.productos
-        SET cantidad = stock_actual_ - cantidad_
-        WHERE codigo = id_producto_;
-
-        -- Acumular valores para la factura
-        subtotal_ := subtotal_ + (precio_venta_ * cantidad_ - descuento_producto_);
-        total_impuestos_ := total_impuestos_ + impuesto_producto_;
-    END LOOP;
-
-    -- Aplicar descuento global a la factura
-    total_ := subtotal_ + total_impuestos_ - p_descuento_factura;
-
-    -- Actualizar la factura con los valores calculados
-    UPDATE proyecto.facturas
-    SET subtotal = subtotal_,
-        total_impuestos = total_impuestos_,
-        total = total_
-    WHERE codigo = p_codigo_factura;
-END;
-$$ LANGUAGE plpgsql;
+	CREATE OR REPLACE procedure proyecto.crear_factura(
+	    p_codigo_factura VARCHAR,
+	    p_fecha DATE,
+	    p_id_cliente_fk VARCHAR,
+	    p_id_metodo_pago_fk VARCHAR,
+	    p_productos JSONB, -- Lista de productos en formato JSONB (id_producto, cantidad, descuento)
+	    p_descuento_factura NUMERIC DEFAULT 0 -- Descuento global para la factura
+	)
+	AS $$
+	DECLARE
+	    subtotal_ NUMERIC := 0;
+	    total_impuestos_ NUMERIC := 0;
+	    total_ NUMERIC := 0;
+	    producto JSONB;
+	    impuesto_producto_ NUMERIC;
+	    valor_total_producto_ NUMERIC;
+	    id_producto_ VARCHAR;
+	    cantidad_ NUMERIC;
+	    descuento_producto_ NUMERIC;
+	    precio_venta_ NUMERIC;
+	    tasa_impuesto_ NUMERIC;
+	    stock_actual_ NUMERIC;
+	BEGIN
+		RAISE NOTICE 'Iniciando procedimiento crear_factura';
+	    -- Verificar si el cliente existe
+	    IF NOT EXISTS (
+	        SELECT 1 FROM proyecto.clientes WHERE numero_documento = p_id_cliente_fk
+	    ) THEN
+	        RAISE EXCEPTION 'El cliente con ID % no existe.', p_id_cliente_fk;
+	    END IF;
+	
+	    -- Insertar factura
+	    INSERT INTO proyecto.facturas (
+	        id, codigo, fecha, subtotal, total_impuestos, total, estado, id_cliente_fk, id_metodo_pago_fk
+	    ) VALUES (
+	        nextval('proyecto.codigo_factura'), -- Usar secuencia para generar ID
+	        p_codigo_factura,
+	        CURRENT_TIMESTAMP,	
+	        0, -- Se calculará más adelante
+	        0,
+	        0,
+	        'pendiente',
+	        p_id_cliente_fk,
+	        p_id_metodo_pago_fk
+	    );
+		RAISE NOTICE 'Factura creada con código: %', p_codigo_factura;
+	    -- Iterar sobre los productos
+	    FOR producto IN SELECT * FROM jsonb_array_elements(p_productos)
+	    LOOP
+	        -- Extraer los valores del JSONB
+	        id_producto_ := producto->>'id_producto';
+	        cantidad_ := (producto->>'cantidad')::NUMERIC;
+	        descuento_producto_ := COALESCE((producto->>'descuento')::NUMERIC, 0);
+	
+	        -- Verificar existencia del producto
+	        SELECT p.precio_venta, p.cantidad, i.porcentaje
+	        INTO precio_venta_, stock_actual_, tasa_impuesto_
+	        FROM proyecto.productos p
+	        JOIN proyecto.impuestos i ON p.impuesto_id_fk = i.identificacion
+	        WHERE p.codigo = id_producto_;
+	
+	        IF stock_actual_ < cantidad_ THEN
+	            RAISE EXCEPTION 'Stock insuficiente para el producto %.', id_producto_;
+	        END IF;
+	
+	        -- Calcular impuestos y valor total por producto
+	        valor_total_producto_ := precio_venta_ * cantidad_;
+	        impuesto_producto_ := valor_total_producto_ * (tasa_impuesto_ / 100);
+	        valor_total_producto_ := valor_total_producto_ + impuesto_producto_ - descuento_producto_;
+	
+	        -- Insertar detalle de la factura
+	        INSERT INTO proyecto.detalles_factura (
+	            id, cantidad, descuento, valor_total, id_producto_fk, id_factura_fk
+	        ) VALUES (
+	            nextval('proyecto.codigo_detalle_factura'),
+	            cantidad_,
+	            descuento_producto_,
+	            valor_total_producto_,
+	            id_producto_,
+	            p_codigo_factura
+	        );
+	
+	        -- Actualizar inventario
+	        UPDATE proyecto.productos
+	        SET cantidad = stock_actual_ - cantidad_
+	        WHERE codigo = id_producto_;
+	
+	        -- Acumular valores para la factura
+	        subtotal_ := subtotal_ + (precio_venta_ * cantidad_ - descuento_producto_);
+	        total_impuestos_ := total_impuestos_ + impuesto_producto_;
+	    END LOOP;
+	
+	    -- Aplicar descuento global a la factura
+	    total_ := subtotal_ + total_impuestos_ - p_descuento_factura;
+	
+	    -- Actualizar la factura con los valores calculados
+	    UPDATE proyecto.facturas
+	    SET subtotal = subtotal_,
+	        total_impuestos = total_impuestos_,
+	        total = total_
+	    WHERE codigo = p_codigo_factura;
+	COMMIT;
+	END;
+	$$ LANGUAGE plpgsql;
 
 
 call proyecto.crear_factura(
@@ -119,6 +121,16 @@ call proyecto.crear_factura(
     '[{"id_producto": "6785B", "cantidad": 2, "descuento": 0}, {"id_producto": "6787B", "cantidad": 1, "descuento": 3}]',
     5 -- Descuento global
 );
+
+CALL proyecto.crear_factura(
+    'FAC005', 
+    CURRENT_DATE, 
+    '30234876', 
+    'M01', 
+    '[{"id_producto": "6785B", "cantidad": 2, "descuento": 10}]',
+    0
+);
+
 
 select * from proyecto.facturas f; 
 select * from proyecto.detalles_factura df;

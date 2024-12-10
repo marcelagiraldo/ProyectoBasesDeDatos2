@@ -139,3 +139,4 @@ create sequence proyecto.codigo_informe
 create sequence proyecto.codigo_inventario
 	start with 001
 	increment by 1;
+
