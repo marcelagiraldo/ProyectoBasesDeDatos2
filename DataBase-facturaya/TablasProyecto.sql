@@ -97,6 +97,12 @@ create table proyecto.informes(
 	datos_json jsonb not null
 );
 
+CREATE TABLE proyecto.xml_facturas (
+    codigo_factura VARCHAR PRIMARY KEY,
+    xml_contenido XML NOT NULL
+);
+
+
 /*--------SECUENCIAS---------*/
 create sequence proyecto.codigo_cliente
 	start with 001
