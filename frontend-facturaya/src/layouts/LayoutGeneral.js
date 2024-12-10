@@ -16,11 +16,16 @@ export const LayoutGeneral = (props) => {
     navigate('/inventarios')
   }
   const handleClickFactura = () =>{
+    navigate('/facturas')
+  }
+  const handleClickHome = () =>{
     navigate('/')
   }
+
   return (
     <Layout>
         <div className='menu'>
+            <button onClick={handleClickHome} className='btn'>Factura ya</button>
             <button onClick={handleClickproduct} className='btn'>Productos</button>
             <button onClick={handleClickclient} className='btn'>Clientes</button>
             <button onClick={handleClickFactura} className='btn'>Facturas</button>

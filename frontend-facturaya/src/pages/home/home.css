@@ -1,0 +1,89 @@
+.product-card-list div {
+    margin: 5px 0; /* Reduce la separación vertical */
+    padding: 0;    /* Asegúrate de que no haya relleno adicional */
+}
+
+.product-card-list {
+    width: 30%;
+    height: auto;
+    padding: 10px; /* Espaciado interno uniforme */
+    border: 1px solid #ccc; /* Línea para delimitar */
+    border-radius: 5px; /* Bordes redondeados */
+    margin: 2%;
+}
+.popupdiv_{
+    font-size: 25px;
+    margin-bottom: 20px;
+}
+.facturacion {
+    display: flex; /* Activa el modelo flexbox */
+    gap: 2px; /* Espaciado horizontal entre columnas */
+    padding: 2px;
+}
+
+.products-container, .selected-products-container {
+    flex: 1; /* Las columnas ocuparán el mismo ancho */
+    max-width: 45%; /* Limita el ancho para que no ocupen toda la pantalla */
+    border: 1px solid #ddd; /* Opcional: agrega un borde para delimitar */
+    padding: 5px;
+    border-radius: 5px; /* Opcional: bordes redondeados */
+    background-color: #f9f9f9; /* Fondo claro */
+    overflow-y: auto; /* Scroll si hay demasiados productos */
+    height: 80vh; /* Fija la altura del contenedor */
+}
+
+.product-card, .product-card-list {
+    border: 1px solid #ccc; /* Opcional: línea alrededor de cada producto */
+    padding: 10px;
+    margin-bottom: 10px; /* Espaciado entre productos */
+    border-radius: 5px;
+    background-color: #fff; /* Fondo blanco para los productos */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+.summary {
+    margin-bottom: 20px; /* Espacio debajo del resumen */
+    padding: 10px;
+    background-color: #e9ecef; /* Fondo claro para el resumen */
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.factura-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 900px;
+    background: rgb(156, 154, 154);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    z-index: 1000;
+    padding: 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-height: 90vh;
+    overflow-y: auto; /* Allow vertical scrolling if content overflows */
+  }
+
+  .closeBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .popupInput {
+    appearance: none; /* Elimina el estilo predeterminado del navegador */
+    font-size: 15px;
+    padding: 5px;
+    height: auto; /* Ajusta automáticamente la altura */
+    line-height: 1; /* Espaciado entre líneas */
+    text-align: left; /* Alinea el texto a la izquierda */
+    background-color: white;
+}
+

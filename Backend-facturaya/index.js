@@ -5,6 +5,11 @@ const app = express()
 const bodyParser = require('body-parser')
 const { Connection } = require('pg')
 const port = process.env.port || 3005
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
+const { MongoClient } = require('mongodb');
+const client = new MongoClient('mongodb://localhost:27017');
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -264,3 +269,158 @@ app.get('/inventarios',(req,res)=>{
     })
 })
 
+app.post('/deatllesFactura',(req,res)=>{
+    const {cantidad,descuento,valor_total,id_producto_fk,id_factura_fk} = req.body
+    const sql = "call proyecto.crear_detalles_facturas($1,$2,$3,$4,$5)"
+    pool.query(sql,[cantidad,descuento,valor_total,id_producto_fk,id_factura_fk],(err,result)=>{
+        if(err) {
+            console.error("Error al llamar al procedimiento:", err);
+            return res.status(500).json({ error: "Error al insertar el impuesto." });
+        }
+        return res.status(200).json({ message: "Impuesto insertado exitosamente." });
+    })
+})
+
+app.get('/detallesFactura',(req,res)=>{
+    const sql = "select * from proyecto.obtener_detalles_facturas()"
+    pool.query(sql,(err,result)=>{
+        if(err) return res.json(err);
+        return res.status(200).json(result.rows)
+    })
+})
+
+async function crearFactura(codigoFactura, fecha, clienteId, metodoPagoId, productos, descuentoFactura = 0) {
+    const productosJSONB = JSON.stringify(productos);
+    console.log('productosJSONB:', productosJSONB);
+    try {
+      const query = `
+        CALL proyecto.crear_factura($1, $2, $3, $4, $5, $6);
+      `;
+      const params = [codigoFactura, fecha, clienteId, metodoPagoId, productosJSONB, descuentoFactura];
+      await pool.query(query, params);
+      console.log('Factura creada exitosamente');
+    } catch (err) {
+      console.error('Error al crear la factura:', err);
+    }
+}
+
+async function actualizarStock(codigoProducto, tipoMovimiento, cantidad, observaciones = '') {
+    try {
+      const query = `
+        CALL proyecto.stock_productos($1, $2, $3, $4);
+      `;
+      const params = [codigoProducto, tipoMovimiento, cantidad, observaciones];
+      await pool.query(query, params);
+      console.log('Stock actualizado exitosamente');
+      const auditData = {
+        tipo_accion: 'Actualización de stock',
+        codigo_producto: codigoProducto,
+        Tipo_movimiento:tipoMovimiento,
+        fecha_creacion: new Date()
+    };
+    await logAuditAction(auditData);
+    } catch (err) {
+      console.error('Error al actualizar el stock:', err);
+    }
+}
+
+async function procesarFacturaYActualizarStock(facturaData) {
+    try {
+      // Llama a crear_factura
+      await crearFactura(
+        facturaData.codigoFactura,
+        facturaData.fecha,
+        facturaData.clienteId,
+        facturaData.metodoPagoId,
+        facturaData.productos,
+        facturaData.descuentoFactura
+      );
+
+      // Actualiza el stock para cada producto
+      for (const producto of facturaData.productos) {
+        await actualizarStock(
+          producto.id_producto,
+          'Salida',
+          producto.cantidad,
+          'Venta de producto'
+        );
+      }
+      const auditData = {
+            tipo_accion: 'creación_factura',
+            codigo_factura: facturaData.codigoFactura,
+            cliente:facturaData.clienteId,
+            fecha_creacion: new Date(),
+            descripcion: 'Factura creada correctamente'
+        };
+        await logAuditAction(auditData);
+      console.log('Proceso completado exitosamente');
+    } catch (err) {
+      console.error('Error en el proceso:', err);
+    }
+}
+
+app.post('/crearFactura', async (req, res) => {
+    try {
+      const facturaData = req.body;
+      await procesarFacturaYActualizarStock(facturaData);
+      console.log(pool.query('COMMIT'));
+      await generarPDFFactura(facturaData);
+      res.status(200).send({ message: 'Factura procesada exitosamente' });
+    } catch (err) {
+      res.status(500).send({ error: 'Error al procesar la factura' });
+    }
+});
+
+async function generarPDFFactura(facturaData) {
+    try {
+        const doc = new PDFDocument();
+        const fileName = path.join(__dirname, `factura_${facturaData.codigoFactura}.pdf`);
+
+        doc.pipe(fs.createWriteStream(fileName));
+
+        // Encabezado
+        doc.fontSize(20).text('Factura', {
+            align: 'center'
+        });
+        doc.moveDown();
+
+        // Datos de la factura
+        doc.fontSize(14).text(`Código de Factura: ${facturaData.codigoFactura}`, { align: 'left' });
+        doc.text(`Fecha: ${(new Date(facturaData.fecha)).toDateString()}`, { align: 'left' });
+        doc.text(`Cliente ID: ${facturaData.clienteId}`, { align: 'left' });
+        doc.text(`Método de Pago: ${facturaData.metodoPagoId}`, { align: 'left' });
+        doc.text(`Total: ${facturaData.total}`, { align: 'left' });
+        doc.moveDown();
+
+        // Detalles de la factura
+        doc.fontSize(16).text('Detalles de la Factura:', { underline: true });
+        facturaData.productos.forEach((producto, index) => {
+            doc.fontSize(12).text(`Producto ${index + 1}:`, { align: 'left' });
+            doc.text(`ID: ${producto.id_producto}`, { align: 'left' });
+            doc.text(`Cantidad: ${producto.cantidad}`, { align: 'left' });
+            doc.text(`Descuento: ${producto.descuento || 0}%`, { align: 'left' });
+            doc.moveDown();
+        });
+
+        // Crear el archivo PDF
+        doc.end();
+        console.log(`Factura ${facturaData.codigoFactura} generada y guardada como ${fileName}`);
+    } catch (err) {
+        console.error('Error al generar el PDF de la factura:', err);
+    }
+}
+
+async function logAuditAction(actionData) {
+    try {
+        await client.connect();
+        const database = client.db('auditoria_db'); // Nombre de la base de datos
+        const collection = database.collection('factura_auditoria');
+
+        const result = await collection.insertOne(actionData);
+        console.log('Registro de auditoría insertado:', result);
+    } catch (error) {
+        console.error('Error al insertar el registro de auditoría:', error);
+    } finally {
+        await client.close();
+    }
+}

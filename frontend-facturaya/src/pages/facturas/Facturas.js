@@ -7,7 +7,7 @@ export const Facturas = () => {
   const [facturas,setfacturas] = useState([])
   const [filteredfacturas,setFilteresfacturas] = useState([])
   const [isModalOpen,setIsModalOpen] = useState(false)
-  const [facturaData,setfacturaData]=useState({codigo:"",descripcion:"",precio_venta:"",impuesto_id_fk:"",medida:"",categoria_id_fk:""})
+  const [facturaData,setfacturaData]=useState({codigo:"",fecha:"",subtotal:"",total_impuestos:"",total:"",estado:"",id_cliente_fk:"",id_metodo_pago_fk:""})
   const [errorMsg,setErrorMsg] = useState("")
   const [isEditMode, setIsEditMode] = useState(false)
   const [metodoPago,setmetodoPago] = useState([])
@@ -17,17 +17,45 @@ export const Facturas = () => {
   const [filteredClientes, setFilteredClientes] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState(null);
 
+  const [detallesFactura, setdetallesFactura] = useState([]);
+  const [filteredDetallesfacturas,setFilteresDetallesfacturas] = useState([])
+
+  const [productos,setproductos] = useState([])
+  const [filteredproductos,setFilteresproductos] = useState([])
+
+  const [nuevoDetalle, setNuevoDetalle] = useState({id_producto_fk: "",cantidad: "",descuento: 0,});
+
   useEffect(()=>{
     getAllfacturas()
     const currentDate = new Date().toISOString().split('T')[0]; // Formato: YYYY-MM-DD
     setfacturaData((prevData) => ({ ...prevData, fecha: currentDate }));
     getAllMetodosPago()
+    getAllDetallesFactura()
+    getAllProductos()
+    getAllClientes()
   },[])
 
   const getAllClientes = () => {
     axios.get('http://localhost:3005/clientes').then((res) => {
       setClientes(res.data);
       setFilteredClientes(res.data);
+    }).catch((error) => {
+      console.error("Error al obtener los clientes:", error);
+    });
+  };
+  const getAllProductos = () => {
+    axios.get('http://localhost:3005/productos').then((res) => {
+      setproductos(res.data);
+      setFilteresproductos(res.data);
+    }).catch((error) => {
+      console.error("Error al obtener los clientes:", error);
+    });
+  };
+
+  const getAllDetallesFactura = () => {
+    axios.get('http://localhost:3005/detallesFactura').then((res) => {
+      setdetallesFactura(res.data);
+      setFilteresDetallesfacturas(res.data);
     }).catch((error) => {
       console.error("Error al obtener los clientes:", error);
     });
@@ -59,38 +87,46 @@ export const Facturas = () => {
   const handleClose=()=>{
     setIsModalOpen(false)
     getAllfacturas()
-    setfacturaData({codigo:"",descripcion:"",precio_venta:"",impuesto_id_fk:"",medida:"",categoria_id_fk:""})
+    setfacturaData({codigo:"",fecha:"",subtotal:"",total_impuestos:"",total:"",estado:"",id_cliente_fk:"",id_metodo_pago_fk:""})
     setErrorMsg("")
   }
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    let errMsg = ""
-    const dataToSend = { ...facturaData };
-    if (!facturaData.codigo || !facturaData.descripcion || !facturaData.precio_venta ||
-        !facturaData.impuesto_id_fk || !facturaData.medida || !facturaData.categoria_id_fk) {
-      errMsg = "Todos los campos son requeridos";
-      setErrorMsg(errMsg);
-      return;
-    }
-
+  const handleSubmit = async () => {
     try {
-      if (isEditMode) {
-        await axios.patch(`http://localhost:3005/facturas/${facturaData.codigo}`, dataToSend);
-        console.log("Producto actualizado con éxito");
-      } else {
-        await axios.post('http://localhost:3005/facturas', dataToSend);
-        console.log("Producto agregado con éxito");
-        console.log(dataToSend)
-      }
-      handleClose();
-      getAllfacturas();
+        // Paso 1: Crear la factura principal
+        const facturaResponse = await axios.post('http://localhost:3005/crearFactura', {
+            codigo: facturaData.codigo,
+            fecha: facturaData.fecha,
+            subtotal: facturaData.subtotal,
+            total_impuestos: facturaData.total_impuestos,
+            total: facturaData.total,
+            estado: "Pendiente", // Ejemplo de estado inicial
+            id_cliente_fk: selectedCliente.numero_documento,
+            id_metodo_pago_fk: facturaData.metodo_pago_
+        });
+
+        const facturaCodigo = facturaResponse.data.codigo;
+
+        // Paso 2: Crear los detalles de la factura
+        for (const detalle of detallesFactura) {
+            await axios.post('http://localhost:3005/crearDetalleFactura', {
+                id: detalle.id,
+                cantidad: detalle.cantidad,
+                descuento: detalle.descuento || 0,
+                valor_total: detalle.valor_total,
+                id_producto_fk: detalle.id_producto_fk,
+                id_factura_fk: facturaCodigo
+            });
+        }
+
+        alert("Factura y detalles creados exitosamente.");
+        handleClose();
     } catch (error) {
-      console.error("Error al guardar el cliente:", error);
+        console.error("Error al guardar la factura o los detalles:", error);
     }
-  }
+};
+
 
   const handleChange = (e)=>{
-    setfacturaData({...facturaData,[e.target.name]:e.target.value})
     const { name, value } = e.target;
     setfacturaData((prevData) => ({
       ...prevData,
@@ -109,27 +145,6 @@ export const Facturas = () => {
     factura.p_impuesto_porcentaje.toLowerCase().includes(searchValue))
     setFilteresfacturas(filteredData)
   }
-
-  const handleSearchClient = async (e) => {
-    const searchValue = e.target.value;
-    setSelectedCliente(searchValue);
-
-    if (searchValue.trim() === '') {
-        setClientes([]); // Limpia la lista si el input está vacío
-        return;
-    }
-
-    try {
-        const response = await fetch(`/clientesNombre/${searchValue}`);
-        if (!response.ok) throw new Error('Error fetching clients');
-
-        const data = await response.json();
-        setClientes(data ? [data] : []); // Asegura un array aunque sea un solo cliente
-    } catch (error) {
-        console.error('Error al buscar clientes:', error);
-        setClientes([]);
-    }
-};
 
   const handleUpdate=(factura)=>{
     setfacturaData({
@@ -174,7 +189,7 @@ export const Facturas = () => {
           {errorMsg && <p className='error'>{errorMsg}</p>}
           <div className='popupdiv'>
             <label className='popopLabel' htmlFor='codigo'>Codigo</label><br></br>
-            <input className='popupInput' value={facturaData.nombre} onChange={handleChange} type='text' name='nombre' id='name'/>
+            <input className='popupInput' value={facturaData.codigo} onChange={handleChange} type='text' name='nombre' id='name'/>
           </div>
           <div className='popupdiv'>
             <label className='popopLabel' htmlFor='fecha'>Fecha</label><br />
@@ -189,37 +204,37 @@ export const Facturas = () => {
           </div>
           <div className='popupdiv'>
             <label className='popopLabel' htmlFor='subtotal'>Subtotal</label><br></br>
-            <input className='popupInput' value={facturaData.telefono} onChange={handleChange} type='number' name='telefono' id='phone'/>
+            <input className='popupInput' value={facturaData.subtotal} onChange={handleChange} type='number' name='telefono' id='phone'/>
           </div>
 
           <div className='popupdiv'>
             <label className='popopLabel' htmlFor='email'>Total IVA</label><br></br>
-            <input className='popupInput' value={facturaData.email} onChange={handleChange} type='email' name='email' id='email'/>
+            <input className='popupInput' value={facturaData.total_impuestos} onChange={handleChange} type='email' name='email' id='email'/>
           </div>
           <div className='popupdiv'>
             <label className='popopLabel' htmlFor='address'>Total</label><br></br>
-            <input className='popupInput' value={facturaData.direccion} onChange={handleChange} type='text' name='direccion' id='address'/>
+            <input className='popupInput' value={facturaData.total} onChange={handleChange} type='text' name='direccion' id='address'/>
           </div>
           <div className='popupdiv'>
-            <label className='popopLabel' htmlFor='department'>Cliente</label><br></br>
-            <input className='popupInput' onChange={handleSearchClient} type='search' name='searchinput' id='searchinput' placeholder='Buscar por nombre o documento' value={selectedCliente}/>
-            <ul className='client-list'>
-                {clientes.map((client, index) => (
-                  <li key={index}>
-                      {client.nombre_v} - {client.numero_documento_v}
-                  </li>
-                ))}
-            </ul>
+            <label className='popopLabel' htmlFor='id_cliente_fk'>Cliente</label><br></br>
+            <select className='popupInput' value={facturaData.id_cliente_fk} onChange={handleChange} name='id_cliente_fk' id='id_cliente_fk'>
+              <option value="">Seleccione un cliente</option>
+              {Array.isArray(filteredClientes) && filteredClientes.map(clientes => (
+                <option key={clientes.numero_documento_v} value={clientes.numero_documento_v}>
+                  {clientes.nombre_v}
+                </option>
+              ))}
+            </select>
           </div>
           <div className='popupdiv_'>
             <label className='popopLabel' htmlFor='city'>Metodo pago</label><br></br>
             <button>+</button>
             <select
               className='popupInput'
-              value={facturaData.metodo_pago_}
+              value={facturaData.id_metodo_pago_fk}
               onChange={handleChange}
-              name='impuesto_id_fk'
-              id='impuesto_id_fk'>
+              name='id_metodo_pago_fk'
+              id='id_metodo_pago_fk'>
               <option value="">Seleccione un metodo pago</option>
               {Array.isArray(filteredmetodoPago) && filteredmetodoPago.map(metodoPago => (
                 <option key={metodoPago.p_identificacion} value={metodoPago.p_identificacion}>

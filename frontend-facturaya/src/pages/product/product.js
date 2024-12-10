@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import './styleProduct.css';
-import '../../layouts/Layout.css'
 import axios from 'axios'
 
 export const Product = () => {
@@ -12,8 +11,11 @@ export const Product = () => {
   const [isEditMode, setIsEditMode] = useState(false)
   const [impuestos,setImpuestos] = useState([])
   const [filteredimpuesto,setFilteresimpuesto] = useState([])
+  const [impuestoData,setimpuestoData]=useState({identificacion:"",nombre:"",porcentaje:""})
   const [categorias,setcategoria] = useState([])
   const [filteredcategoria,setFilterescategoria] = useState([])
+
+  const [isModalCIOpen,setIsModalCIOpen] = useState(false)
 
   useEffect(()=>{
     getAllproducts()
@@ -51,14 +53,48 @@ export const Product = () => {
 const openPopup=()=>{
   setIsModalOpen(true)
   setIsEditMode(false)
-  setIsModalOpen(true)
+}
+const openCreateImpuesto=()=>{
+  setIsModalCIOpen(true)
 }
 const handleClose=()=>{
   setIsModalOpen(false)
+  setIsModalCIOpen(false)
   getAllproducts()
   setproductData({codigo:"",descripcion:"",precio_venta:"",impuesto_id_fk:"",medida:"",categoria_id_fk:"",cantidad:""})
   setErrorMsg("")
 }
+const handleCloseCI=()=>{
+  setIsModalCIOpen(false)
+  getAllImouestos()
+}
+const handleSubmitCI = async (e) => {
+  e.preventDefault();
+
+  let errMsg = "";
+
+  // Validación de campos
+  if (!impuestoData.identificacion || !impuestoData.nombre || !impuestoData.porcentaje) {
+    errMsg = "Todos los campos son requeridos";
+    setErrorMsg(errMsg);
+    return;
+  }
+
+  const dataToSend = { ...impuestoData };
+
+  try {
+    // Crear un nuevo impuesto
+    await axios.post('http://localhost:3005/impuestos', dataToSend);
+    console.log("Impuesto agregado con éxito");
+
+    // Cerrar el modal y actualizar los impuestos
+    handleCloseCI();
+    getAllImouestos();
+  } catch (error) {
+    console.error("Error al agregar el impuesto:", error);
+  }
+};
+
 const handleSubmit = async (e) => {
   e.preventDefault()
   let errMsg = ""
@@ -86,9 +122,13 @@ const handleSubmit = async (e) => {
   }
 }
 
-const handleChange = (e)=>{
-  setproductData({...productData,[e.target.name]:e.target.value})
-}
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setproductData((prevState) => ({
+    ...prevState,
+    [name]: value, // Asegúrate de que el nombre coincide con el atributo `name` del input/select
+  }));
+};
 
 const handleSearch=(e)=>{
   const searchValue = e.target.value.toLowerCase()
@@ -161,7 +201,7 @@ return (
 
           <div className='popupdiv_'>
             <label className='popopLabel' htmlFor='impuesto_id_fk'>Impuesto</label>
-            <button>+</button>
+            <button onClick={openCreateImpuesto}>+</button>
             <select className='popupInput' value={productData.impuesto_id_fk} onChange={handleChange} name='impuesto_id_fk' id='impuesto_id_fk'>
               <option value="">Seleccione un impuesto</option>
               {Array.isArray(filteredimpuesto) && filteredimpuesto.map(impuesto => (
@@ -180,7 +220,7 @@ return (
           <div className='popupdiv_'>
             <label className='popopLabel' htmlFor='categoria_id_fk'>Categoria</label>
             <button>+</button>
-            <select className='popupInput' value={productData.categoria_id_fk} onChange={handleChange} name='categoria_id_fk' id='categoria_id_fk'>
+            <select className='popupInput' value={productData.categoria_id_fk} onChange={handleChange} name='categoria_id_fk' id='categoria_id_fk' >
               <option value="">Seleccione una categoria</option>
               {Array.isArray(filteredcategoria) && filteredcategoria.map(categoria => (
                 <option key={categoria.p_identificacion} value={categoria.p_identificacion}>
@@ -196,6 +236,27 @@ return (
         </div>
       )}
     </div>
+    <div>{isModalCIOpen && (
+      <div className='agregar-impuesto'>
+  <button className='closeBtn' onClick={handleCloseCI}>&times;</button>
+  <div className='popupdiv'>
+    <label className='popopLabel' htmlFor='identificacion'>Identificación</label><br />
+    <input className='popupInput' value={impuestoData.identificacion} onChange={handleChange} type='text' name='identificacion' id='identificacion' />
+  </div>
+  <div className='popupdiv'>
+    <label className='popopLabel' htmlFor='nombre'>Nombre</label><br />
+    <input className='popupInput' value={impuestoData.nombre} onChange={handleChange} type='text' name='nombre' id='nombre' />
+  </div>
+  <div className='popupdiv'>
+    <label className='popopLabel' htmlFor='porcentaje'>Porcentaje</label><br />
+    <input className='popupInput' value={impuestoData.porcentaje} onChange={handleChange} type='number' name='porcentaje' id='porcentaje' />
+  </div>
+  <button className='addproductBtn' onClick={handleSubmitCI}>
+    Agregar
+  </button>
+</div>
+
+    )}</div>
 
     <div className="products-container">
       {Array.isArray(filteredproducts) && filteredproducts.map(product => (
